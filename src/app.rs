@@ -149,6 +149,8 @@ fn format_correct_answer(numbers: &NumbersToCompare) -> String {
 pub fn app() -> Html {
     let numbers_to_compare = use_state(|| NumbersToCompare::new());
 
+    let history = use_state(|| Vec::<Result>::new());
+
     let question_state = use_state(|| QuestionState::AskUser);
 
     let update_question_state = {
@@ -161,7 +163,17 @@ pub fn app() -> Html {
     let ask_next_question = {
         let numbers_to_compare = numbers_to_compare.clone();
         let question_state = question_state.clone();
+        let history = history.clone();
         move |_| {
+            match (*question_state).clone() {
+                QuestionState::DisplayResult(result) => {
+                    let mut new_history = (*history).clone();
+                    new_history.push(result);
+                    history.set(new_history);
+                    // history.set((*history).clone().into_iter().chain(std::iter::once(result)).collect());
+                }
+                _ => {}
+            }
             numbers_to_compare.set(NumbersToCompare::new());
             question_state.set(QuestionState::AskUser);
         }
@@ -169,6 +181,29 @@ pub fn app() -> Html {
 
     let next_question_button = html! {
         <button onclick={ask_next_question} style="font-size: 2em; width: 80%;">{ "Nächste Frage" }</button>
+    };
+
+    let formatted_history_items = (*history)
+        .clone()
+        .into_iter()
+        .enumerate()
+        .map(|(i, result)| {
+            let text = match result {
+                Result::Correct => "👍",
+                Result::IncorrectNoHelp | Result::IncorrectWithHelp  => "🤔",
+            };
+            html! {
+                <li key={i.to_string()} style="display: inline;">{ text }</li>
+            }
+        })
+        .collect::<Html>();
+
+    let formatted_history = html! {
+        <div style="margin-top: 1em;">
+            <ul>
+                { formatted_history_items }
+            </ul>
+        </div>
     };
 
     html! {
@@ -189,28 +224,31 @@ pub fn app() -> Html {
                             Result::Correct => {
                                 html! {
                                     <>
-                                        <h1>{ "Richtig!" }</h1>
+                                        <h1>{ "Das stimmt 🥳, weiter so!" }</h1>
                                         { correct_answer }
                                         { next_question_button }
+                                        { formatted_history }
                                     </>
                                 }
                             }
                             Result::IncorrectNoHelp => {
                                 html! {
                                     <>
-                                        <h1>{ "Falsch!" }</h1>
+                                        <h1>{ "Leider nicht richtig." }</h1>
                                         { correct_answer }
                                         <p>{ "Zeige dir nächstes mal die Bilder an, wenn du unsicher bist." }</p>
                                         { next_question_button }
+                                        { formatted_history }
                                     </>
                                 }
                             }
                             Result::IncorrectWithHelp => {
                                 html! {
                                     <>
-                                        <h1>{ "Falsch!" }</h1>
+                                        <h1>{ "Leider nicht richtig!" }</h1>
                                         { correct_answer }
                                         { next_question_button }
+                                        { formatted_history }
                                     </>
                                 }
                             }
