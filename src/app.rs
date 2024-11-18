@@ -23,14 +23,17 @@ fn number_as_svg(value: i32, color: String) -> Html {
     }
 }
 
-#[function_component(App)]
-pub fn app() -> Html {
-    let mut rng = rand::thread_rng();
-    // ensure that we do not get the same digit twice, e.g. 77
-    let digits = (0..10).choose_multiple(&mut rng, 2);
-    let number1 = 10 * digits[0] + digits[1];
-    let number2 = 10 * digits[1] + digits[0];
 
+
+#[derive(Properties, PartialEq)]
+struct TwoNumbersProps {
+    number1: i32,
+    number2: i32,
+}
+
+
+#[function_component(TwoNumbers)]
+fn two_numbers(TwoNumbersProps { number1, number2 }: &TwoNumbersProps) -> Html {
     let show_numbers_as_images = use_state(|| false);
 
     let do_show_numbers_as_images = {
@@ -41,8 +44,7 @@ pub fn app() -> Html {
     };
 
     html! {
-        <main>
-            <h1>{ "Welche Zahl ist größer?" }</h1>
+        <>
             <div style="display: flex; justify-content: center; align-items: center; width: 80%; margin: 0 auto;">
                 <button style="font-size: 2em; width: 40%; margin: 0 10px; background-color: yellow;">{ number1 }</button>
                 <button style="font-size: 2em; width: 40%; margin: 0 10px; background-color: blue;">{ number2 }</button>
@@ -51,8 +53,8 @@ pub fn app() -> Html {
                 if *show_numbers_as_images {
                     html! {
                         <div style="display: flex; justify-content: center; align-items: center; width: 80%; margin: 0 auto;">
-                            { number_as_svg(number1, "yellow".to_string() ) }
-                            { number_as_svg(number2, "blue".to_string() ) }
+                            { number_as_svg(*number1, "yellow".to_string() ) }
+                            { number_as_svg(*number2, "blue".to_string() ) }
                         </div>
                     }
                 }
@@ -64,6 +66,25 @@ pub fn app() -> Html {
                     }
                 }
             }
+        </>
+    }
+
+}
+
+
+
+#[function_component(App)]
+pub fn app() -> Html {
+    let mut rng = rand::thread_rng();
+    // ensure that we do not get the same digit twice, e.g. 77
+    let digits = (0..10).choose_multiple(&mut rng, 2);
+    let number1 = 10 * digits[0] + digits[1];
+    let number2 = 10 * digits[1] + digits[0];
+
+    html! {
+        <main>
+            <h1>{ "Welche Zahl ist größer?" }</h1>
+            <TwoNumbers number1={ number1 } number2={ number2 } />
         </main>
     }
 }
