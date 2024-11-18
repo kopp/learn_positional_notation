@@ -1,4 +1,4 @@
-name: pr_check
+name: Build, Test and Deploy
 
 on:
   workflow_dispatch:
@@ -6,14 +6,18 @@ on:
   pull_request:
     branches: [ master ]
 
+# sets permissions of the GITHUB_TOKEN to allow deployment ot GitHub pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: install toolchain
@@ -28,6 +32,25 @@ jobs:
       with:
         version: 'latest'
     - name: Build
-      run: trunk build
+      run: trunk build --release
+    - name: Upload built artifact
+      if: github.ref == 'refs/heads/master'
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: dist
     - name: Run tests
       run: cargo test --verbose
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # make sure that the current branch is allowed to deploy to this environment.
+    # Settings > Environments > github-pages > Deployment branches
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
