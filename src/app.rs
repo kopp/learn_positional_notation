@@ -45,11 +45,11 @@ impl NumbersToCompare {
 #[derive(Properties, PartialEq)]
 struct TwoNumbersProps {
     numbers: NumbersToCompare,
+    on_update: Callback<QuestionState>,
 }
 
-
 #[function_component(TwoNumbers)]
-fn two_numbers(TwoNumbersProps { numbers, }: &TwoNumbersProps) -> Html {
+fn two_numbers(TwoNumbersProps { numbers, on_update }: &TwoNumbersProps) -> Html {
     let show_numbers_as_images = use_state(|| false);
 
     let do_show_numbers_as_images = {
@@ -59,11 +59,47 @@ fn two_numbers(TwoNumbersProps { numbers, }: &TwoNumbersProps) -> Html {
         }
     };
 
+    let on_click_number1 = {
+        let on_update = on_update.clone();
+        let numbers = numbers.clone();
+        let show_numbers_as_images = show_numbers_as_images.clone();
+        move |_| {
+            if numbers.number1 > numbers.number2 {
+                on_update.emit(QuestionState::DisplayResult(Result::Correct));
+            } else {
+                if *show_numbers_as_images {
+                    on_update.emit(QuestionState::DisplayResult(Result::IncorrectWithHelp));
+                } else {
+                    on_update.emit(QuestionState::DisplayResult(Result::IncorrectNoHelp));
+                }
+            }
+        }
+    };
+
+    let on_click_number2 = {
+        let on_update = on_update.clone();
+        let numbers = numbers.clone();
+        let show_numbers_as_images = show_numbers_as_images.clone();
+        move |_| {
+            if numbers.number2 > numbers.number1 {
+                on_update.emit(QuestionState::DisplayResult(Result::Correct));
+            } else {
+                if *show_numbers_as_images {
+                    on_update.emit(QuestionState::DisplayResult(Result::IncorrectWithHelp));
+                } else {
+                    on_update.emit(QuestionState::DisplayResult(Result::IncorrectNoHelp));
+                }
+
+            }
+        }
+    };
+
     html! {
         <>
+            <h1>{ "Welche Zahl ist größer?" }</h1>
             <div style="display: flex; justify-content: center; align-items: center; width: 80%; margin: 0 auto;">
-                <button style="font-size: 2em; width: 40%; margin: 0 10px; background-color: yellow;">{ numbers.number1 }</button>
-                <button style="font-size: 2em; width: 40%; margin: 0 10px; background-color: blue;">{ numbers.number2 }</button>
+                <button onclick={on_click_number1} style="font-size: 2em; width: 40%; margin: 0 10px; background-color: yellow;">{ numbers.number1 }</button>
+                <button onclick={on_click_number2} style="font-size: 2em; width: 40%; margin: 0 10px; background-color: blue;">{ numbers.number2 }</button>
             </div>
             {
                 if *show_numbers_as_images {
@@ -88,15 +124,93 @@ fn two_numbers(TwoNumbersProps { numbers, }: &TwoNumbersProps) -> Html {
 }
 
 
+#[derive(Copy, Clone, PartialEq)]
+enum Result {
+    Correct,
+    IncorrectNoHelp,
+    IncorrectWithHelp,
+}
+
+#[derive(Copy, Clone, PartialEq)]
+enum QuestionState {
+    AskUser,
+    DisplayResult(Result),
+}
+
+
+fn format_correct_answer(numbers: &NumbersToCompare) -> String {
+    let min = numbers.number1.min(numbers.number2);
+    let max = numbers.number1.max(numbers.number2);
+    format!("{} ist größer als {}", max, min)
+}
+
 
 #[function_component(App)]
 pub fn app() -> Html {
     let numbers_to_compare = use_state(|| NumbersToCompare::new());
+    /*
+    let pick_new_numbers = {
+        let numbers_to_compare = numbers_to_compare.clone();
+        move |_| {
+            numbers_to_compare.set(NumbersToCompare::new());
+        }
+    };
+    */
+
+    let question_state = use_state(|| QuestionState::AskUser);
+
+    let update_question_state = {
+        let question_state = question_state.clone();
+        Callback::from(move |new_state: QuestionState| {
+            question_state.set(new_state);
+        })
+    };
 
     html! {
         <main>
-            <h1>{ "Welche Zahl ist größer?" }</h1>
-            <TwoNumbers numbers={ (*numbers_to_compare).clone() } />
+            {
+                match (*question_state).clone() {
+                    QuestionState::AskUser => {
+                        html! {
+                            <TwoNumbers numbers={ (*numbers_to_compare).clone() } on_update={update_question_state.clone()} />
+                        }
+                    }
+                    QuestionState::DisplayResult(result) => {
+                        let correct_answer = html! {
+                            <p>{ format_correct_answer(&(*numbers_to_compare).clone()) }</p>
+                        };
+
+                        match result {
+                            Result::Correct => {
+                                html! {
+                                    <>
+                                        <h1>{ "Richtig!" }</h1>
+                                        { correct_answer }
+                                    </>
+                                }
+                            }
+                            Result::IncorrectNoHelp => {
+                                html! {
+                                    <>
+                                        <h1>{ "Falsch!" }</h1>
+                                        { correct_answer }
+                                        <p>{ "Zeige dir nächstes mal die Bilder an, wenn du unsicher bist." }</p>
+                                    </>
+                                }
+                            }
+                            Result::IncorrectWithHelp => {
+                                html! {
+                                    <>
+                                        <h1>{ "Falsch!" }</h1>
+                                        { correct_answer }
+                                    </>
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
         </main>
     }
 }
