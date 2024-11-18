@@ -12,8 +12,13 @@ pub fn app() -> Html {
     html! {
         <main>
             <h1>{ "Welche Zahl ist größer?" }</h1>
-            <p>{ number1.to_string() }</p>
-            <p>{ number2.to_string() }</p>
+            <div style="display: flex; justify-content: center; align-items: center; width: 80%; margin: 0 auto;">
+                <button style="font-size: 2em; width: 40%; margin: 0 10px;">{ number1 }</button>
+                <button style="font-size: 2em; width: 40%; margin: 0 10px;">{ number2 }</button>
+            </div>
+            <div style="margin-top: 1em;">
+                <button style="font-size: 2em; width: 80%;">{ "Zeige als Bilder" }</button>
+            </div>
         </main>
     }
 }
