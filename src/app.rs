@@ -148,14 +148,6 @@ fn format_correct_answer(numbers: &NumbersToCompare) -> String {
 #[function_component(App)]
 pub fn app() -> Html {
     let numbers_to_compare = use_state(|| NumbersToCompare::new());
-    /*
-    let pick_new_numbers = {
-        let numbers_to_compare = numbers_to_compare.clone();
-        move |_| {
-            numbers_to_compare.set(NumbersToCompare::new());
-        }
-    };
-    */
 
     let question_state = use_state(|| QuestionState::AskUser);
 
@@ -164,6 +156,19 @@ pub fn app() -> Html {
         Callback::from(move |new_state: QuestionState| {
             question_state.set(new_state);
         })
+    };
+
+    let ask_next_question = {
+        let numbers_to_compare = numbers_to_compare.clone();
+        let question_state = question_state.clone();
+        move |_| {
+            numbers_to_compare.set(NumbersToCompare::new());
+            question_state.set(QuestionState::AskUser);
+        }
+    };
+
+    let next_question_button = html! {
+        <button onclick={ask_next_question} style="font-size: 2em; width: 80%;">{ "Nächste Frage" }</button>
     };
 
     html! {
@@ -186,6 +191,7 @@ pub fn app() -> Html {
                                     <>
                                         <h1>{ "Richtig!" }</h1>
                                         { correct_answer }
+                                        { next_question_button }
                                     </>
                                 }
                             }
@@ -195,6 +201,7 @@ pub fn app() -> Html {
                                         <h1>{ "Falsch!" }</h1>
                                         { correct_answer }
                                         <p>{ "Zeige dir nächstes mal die Bilder an, wenn du unsicher bist." }</p>
+                                        { next_question_button }
                                     </>
                                 }
                             }
@@ -203,6 +210,7 @@ pub fn app() -> Html {
                                     <>
                                         <h1>{ "Falsch!" }</h1>
                                         { correct_answer }
+                                        { next_question_button }
                                     </>
                                 }
                             }
