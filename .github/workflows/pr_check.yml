@@ -32,7 +32,10 @@ jobs:
       with:
         version: 'latest'
     - name: Build
-      run: trunk build --release
+      # We assume that the project gets deployed to a github page that has
+      # is hosted at <something>/<name-of-repo>. Trunk needs to know, that
+      # the content will be served from such a 'subdirectory'.
+      run: trunk build --release --public-url /${{ github.event.repository.name }}
     - name: Upload built artifact
       if: github.ref == 'refs/heads/main'
       uses: actions/upload-pages-artifact@v1
