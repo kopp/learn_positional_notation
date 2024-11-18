@@ -2,6 +2,8 @@
 
 Learn to answer questions like: Is 21 greater than 12?
 
+![](logo.jpg)
+
 
 # Development
 
