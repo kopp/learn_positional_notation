@@ -186,11 +186,18 @@ pub fn app() -> Html {
     let formatted_history_items = (*history)
         .clone()
         .into_iter()
+        .chain(
+            match *question_state {
+                QuestionState::DisplayResult(result) => Some(result),
+                _ => None,
+            }
+            .into_iter(),
+        )
         .enumerate()
         .map(|(i, result)| {
             let text = match result {
                 Result::Correct => "👍",
-                Result::IncorrectNoHelp | Result::IncorrectWithHelp  => "🤔",
+                Result::IncorrectNoHelp | Result::IncorrectWithHelp => "🤔",
             };
             html! {
                 <li key={i.to_string()} style="display: inline;">{ text }</li>
