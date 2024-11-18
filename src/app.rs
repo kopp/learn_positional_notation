@@ -2,7 +2,7 @@ use yew::prelude::*;
 use rand::seq::IteratorRandom;
 
 
-fn number(value: i32, color: String) -> Html {
+fn number_as_svg(value: i32, color: String) -> Html {
 
     let grid_size = 4;
 
@@ -51,8 +51,8 @@ pub fn app() -> Html {
                 if *show_numbers_as_images {
                     html! {
                         <div style="display: flex; justify-content: center; align-items: center; width: 80%; margin: 0 auto;">
-                            { number(number1, "yellow".to_string() ) }
-                            { number(number2, "blue".to_string() ) }
+                            { number_as_svg(number1, "yellow".to_string() ) }
+                            { number_as_svg(number2, "blue".to_string() ) }
                         </div>
                     }
                 }
