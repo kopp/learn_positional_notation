@@ -99,14 +99,14 @@ fn two_numbers(TwoNumbersProps { numbers, on_update }: &TwoNumbersProps) -> Html
             <h1>{ "Welche Zahl ist größer?" }</h1>
             <div style="display: flex; justify-content: center; align-items: center; width: 80%; margin: 0 auto;">
                 <button onclick={on_click_number1} style="font-size: 2em; width: 40%; margin: 0 10px; background-color: yellow;">{ numbers.number1 }</button>
-                <button onclick={on_click_number2} style="font-size: 2em; width: 40%; margin: 0 10px; background-color: blue;">{ numbers.number2 }</button>
+                <button onclick={on_click_number2} style="font-size: 2em; width: 40%; margin: 0 10px; background-color: green;">{ numbers.number2 }</button>
             </div>
             {
                 if *show_numbers_as_images {
                     html! {
                         <div style="display: flex; justify-content: center; align-items: center; width: 80%; margin: 0 auto;">
                             { number_as_svg(numbers.number1, "yellow".to_string() ) }
-                            { number_as_svg(numbers.number2, "blue".to_string() ) }
+                            { number_as_svg(numbers.number2, "green".to_string() ) }
                         </div>
                     }
                 }
